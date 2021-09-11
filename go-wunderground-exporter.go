@@ -87,6 +87,9 @@ windgustmph:
 winddir:
   - out: winddir
     collector: Gauge
+    expression: "([in] + 29)% 360"
+    dodecimalplace: true
+    decimalplace: 1
 absbaromin:
   - out: absbarom_in
     collector: Gauge
