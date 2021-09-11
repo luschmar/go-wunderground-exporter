@@ -56,7 +56,7 @@ indoorhumidity:
   - out: indoorhumidity
     collector: Gauge
 humidity:
-  - out: indoorhumidity
+  - out: humidity
     collector: Gauge
 windspeedmph:
   - out: windspeed_mph
