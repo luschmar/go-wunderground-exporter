@@ -21,7 +21,7 @@ ID:
 PASSWORD:
   - out: password
 indoortempf:
-  - out: indoortemp_fahrendheit
+  - out: indoortemp_fahrenheit
     collector: Gauge
   - out: indoortemp_celsius
     collector: Gauge
@@ -29,7 +29,7 @@ indoortempf:
     dodecimalplace: true
     decimalplace: 1
 tempf:
-  - out: temp_fahrendheit
+  - out: temp_fahrenheit
     collector: Gauge
   - out: temp_celsius
     collector: Gauge
@@ -37,7 +37,7 @@ tempf:
     dodecimalplace: true
     decimalplace: 1
 dewptf:
-  - out: dewpt_fahrendheit
+  - out: dewpt_fahrenheit
     collector: Gauge
   - out: dewpt_celsius
     collector: Gauge
@@ -45,7 +45,7 @@ dewptf:
     dodecimalplace: true
     decimalplace: 1
 windchillf:
-  - out: windchill_fahrendheit
+  - out: windchill_fahrenheit
     collector: Gauge
   - out: windchill_celsius
     collector: Gauge
