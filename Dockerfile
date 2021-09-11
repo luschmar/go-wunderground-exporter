@@ -1,3 +1,3 @@
 FROM scratch
-COPY go-wunderground-exporter app/
-CMD ["/app/go-wunderground-exporter"]
+ADD go-wunderground-exporter /
+CMD ["/go-wunderground-exporter"]
