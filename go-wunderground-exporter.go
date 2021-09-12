@@ -20,7 +20,17 @@ ID:
   - out: id
 PASSWORD:
   - out: password
+PASSKEY:
+  - out: password
 indoortempf:
+  - out: indoortemp_fahrenheit
+    collector: Gauge
+  - out: indoortemp_celsius
+    collector: Gauge
+    expression: ([in]-32)/1.8
+    dodecimalplace: true
+    decimalplace: 1
+tempinf:
   - out: indoortemp_fahrenheit
     collector: Gauge
   - out: indoortemp_celsius
@@ -52,11 +62,14 @@ windchillf:
     expression: ([in]-32)/1.8
     dodecimalplace: true
     decimalplace: 1
-indoorhumidity:
-  - out: indoorhumidity
-    collector: Gauge
 humidity:
   - out: humidity
+    collector: Gauge
+humidityin:
+  - out: indoorhumidity
+    collector: Gauge
+indoorhumidity:
+  - out: indoorhumidity
     collector: Gauge
 windspeedmph:
   - out: windspeed_mph
@@ -84,6 +97,19 @@ windgustmph:
     expression: "[in] * (1609.344 / 3600)"
     dodecimalplace: true
     decimalplace: 1
+maxdailygust:
+  - out: maxdailygust_mph
+    collector: Gauge
+  - out: maxdailygust_kmh
+    collector: Gauge
+    expression: ([in] * 1.609344)
+    dodecimalplace: true
+    decimalplace: 1
+  - out: maxdailygust_ms
+    collector: Gauge
+    expression: "[in] * (1609.344 / 3600)"
+    dodecimalplace: true
+    decimalplace: 1
 winddir:
   - out: winddir
     collector: Gauge
@@ -91,6 +117,14 @@ winddir:
     dodecimalplace: true
     decimalplace: 1
 absbaromin:
+  - out: absbarom_in
+    collector: Gauge
+  - out: absbarom_hpa
+    collector: Gauge
+    expression: "[in] * 33.863886666667"
+    dodecimalplace: true
+    decimalplace: 1
+baromabsin:
   - out: absbarom_in
     collector: Gauge
   - out: absbarom_hpa
@@ -106,10 +140,32 @@ baromin:
     expression: "[in] * 33.863886666667"
     dodecimalplace: true
     decimalplace: 1
+baromrelin:
+  - out: barom_in
+    collector: Gauge
+  - out: barom_hpa
+    collector: Gauge
+    expression: "[in] * 33.863886666667"
+    dodecimalplace: true
+    decimalplace: 1
 rainin:
   - out: rain_in
     collector: Gauge
   - out: rain_mm
+    collector: Gauge
+    expression: "[in] * 25.4"
+    dodecimalplace: true
+rainratein:
+  - out: rain_in
+    collector: Gauge
+  - out: rain_mm
+    collector: Gauge
+    expression: "[in] * 25.4"
+    dodecimalplace: true
+hourlyrainin:
+  - out: hourlyrain_in
+    collector: Gauge
+  - out: hourlyrain_mm
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
@@ -141,14 +197,46 @@ yearlyrainin:
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
+totalrainin:
+  - out: totalrain_in
+    collector: Gauge
+  - out: totalrain_mm
+    collector: Gauge
+    expression: "[in] * 25.4"
+    dodecimalplace: true
+eventrainin:
+  - out: eventrain_in
+    collector: Gauge
+  - out: eventrain_mm
+    collector: Gauge
+    expression: "[in] * 25.4"
+    dodecimalplace: true
 solarradiation:
   - out: solarradiation
     collector: Gauge
 UV:
   - out: uv
     collector: Gauge
+uv:
+  - out: uv
+    collector: Gauge
 dateutc:
   - out: dateutc_info
+action:
+  - out: action_info
+softwaretype:
+  - out: softwaretype_info
+rtfreq:
+  - out: rtfreq_info
+freq:
+  - out: freq_info
+model:
+  - out: model_info
+stationtype:
+  - out: stationtype_info
+wh65batt:
+  - out: wh65batt
+    collector: Gauge
 `
 
 type Configs map[string] []OutputConfig
@@ -181,8 +269,15 @@ func main() {
 func importData(w http.ResponseWriter, r *http.Request) {
     query := r.URL.Query()
 
-    for variable, value := range query {
-        processVariableAndValue(variable, value)
+    if len(query) > 0 {
+      for variable, value := range query {
+          processVariableAndValue(variable, value)
+      }
+    } else {
+      r.ParseForm()
+      for variable, value := range r.Form {
+          processVariableAndValue(variable, value)
+      }
     }
 
     w.WriteHeader(200)
@@ -191,7 +286,7 @@ func importData(w http.ResponseWriter, r *http.Request) {
 
 func processVariableAndValue(variable string, value []string) {
     c := configs[variable]
-    if(c == nil) {
+    if c == nil {
         fmt.Println("unknown variable ", variable, " with values ", value, " wont process")
         return
     }
@@ -225,7 +320,7 @@ func processConfigWithVariableAndValue(config OutputConfig, variable string, val
 
 func getConvertedValue(exp string, do bool, dec int8, v string) (f float64){
     f, _ = strconv.ParseFloat(v, 64)
-    if(exp == "" ) {
+    if exp == "" {
         return roundTo(f, do, dec)
     }
 
@@ -241,7 +336,7 @@ func roundTo(v float64, do bool, dec int8) (f float64) {
     if(!do) {
         return v
     }
-    if(dec == 0) {
+    if dec == 0  {
         return math.Floor(v)
     }
     e := (float64)(dec*10)
