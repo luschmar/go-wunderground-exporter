@@ -192,7 +192,7 @@ func importData(w http.ResponseWriter, r *http.Request) {
 func processVariableAndValue(variable string, value []string) {
     c := configs[variable]
     if(c == nil) {
-        fmt.Println("unknown variable ", variable, "wont process")
+        fmt.Println("unknown variable ", variable, " with values ", value, " wont process")
         return
     }
 
