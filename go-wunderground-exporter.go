@@ -5,7 +5,6 @@ import (
 	"math"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -331,7 +330,8 @@ func processConfigWithVariableAndValue(config OutputConfig, variable string, val
 }
 
 func getTimeValue(v string) (f float64) {
-	t, _ := time.Parse("2006-01-02 15:04:05", strings.Replace(v, "+", " ", -1))
+	// time.Parse interpret + in layout as timezone-shifter
+	t, _ := time.Parse("2006-01-02 15:04:05", v)
 	// from: https://github.com/prometheus/client_golang/blob/2261d5cda14eb2adc5897b56996248705f9bb840/prometheus/gauge.go#L98
 	return float64(t.UnixNano()) / 1e9
 }
