@@ -5,6 +5,8 @@ import (
     "net/http"
     "strconv"
     "math"
+    "time"    
+    "strings"
 
     "gopkg.in/yaml.v3"
 
@@ -222,6 +224,7 @@ uv:
     collector: Gauge
 dateutc:
   - out: dateutc_info
+    collector: Time
 action:
   - out: action_info
 softwaretype:
@@ -234,6 +237,8 @@ model:
   - out: model_info
 stationtype:
   - out: stationtype_info
+realtime:
+  - out: realtime_info
 wh65batt:
   - out: wh65batt
     collector: Gauge
@@ -249,10 +254,15 @@ type OutputConfig struct {
     Decimalplace int8
 }
 
+type OutCollectorInstance struct {
+    Type string
+    Collector prometheus.Collector
+}
+
 var configs Configs
 
 
-var outCollectors map[string] prometheus.Collector = make(map[string]prometheus.Collector)
+var outCollectors map[string] OutCollectorInstance = make(map[string]OutCollectorInstance)
 
 func main() {
     err := yaml.Unmarshal([]byte(data), &configs)
@@ -297,25 +307,34 @@ func processVariableAndValue(variable string, value []string) {
 }
 
 func processConfigWithVariableAndValue(config OutputConfig, variable string, value []string) {
-    collector := getOrCreateCollector(config)
-    gauge, ok := collector.(prometheus.Gauge)
-    if(ok) {
+    out := getOrCreateCollector(config)
+    if(out.Type == "Gauge") {
+        gauge, _ := out.Collector.(prometheus.Gauge)
         f := getConvertedValue(config.Expression, config.Dodecimalplace, config.Decimalplace, value[0])
         gauge.Set(f)
         return
-    }
-    counter, ok := collector.(prometheus.Counter)
-    if(ok) {
+    } else if(out.Type == "Counter") {
+        counter, _ := out.Collector.(prometheus.Counter)
         f := getConvertedValue(config.Expression, config.Dodecimalplace, config.Decimalplace, value[0])
         counter.Add(f)
         return
-    }
-    gaugev, ok := collector.(*prometheus.GaugeVec)
-    if(ok) {
+    } else if(out.Type == "Time") {
+        gauge, _ := out.Collector.(prometheus.Gauge)
+        f := getTimeValue(value[0])
+        gauge.Set(f)
+        return
+    } else if(out.Type == "GaugeVec") {
+        gaugev, _ := out.Collector.(*prometheus.GaugeVec)
         gaugev.WithLabelValues(value[0]).Set(1)
         return
     }
     fmt.Println("Reach unprocessed ", variable)
+}
+
+func getTimeValue(v string) (f float64){
+    t, _ := time.Parse("2006-01-02 15:04:05", strings.Replace(v, "+", " ", -1))
+    // from: https://github.com/prometheus/client_golang/blob/2261d5cda14eb2adc5897b56996248705f9bb840/prometheus/gauge.go#L98
+    return float64(t.UnixNano()) / 1e9
 }
 
 func getConvertedValue(exp string, do bool, dec int8, v string) (f float64){
@@ -343,36 +362,42 @@ func roundTo(v float64, do bool, dec int8) (f float64) {
     return math.Floor(v*e)/e
 }
 
-func getOrCreateCollector(config OutputConfig) (c prometheus.Collector) {
-    c = outCollectors[config.Out]
-    if(c == nil) {
+func getOrCreateCollector(config OutputConfig) (out OutCollectorInstance) {
+    v, ok := outCollectors[config.Out]
+    if !ok {
         return initializeCollector(config)
     }
-
-    return c
+    return v
 }
 
-func initializeCollector(config OutputConfig) (c prometheus.Collector){
+func initializeCollector(config OutputConfig) (out OutCollectorInstance){
     if(config.Collector == "Gauge") {
         gauge :=  promauto.NewGauge(prometheus.GaugeOpts{
                 Name: config.Out,
                 Help: config.Out,
         })
-        outCollectors[config.Out] = gauge
-        return gauge
+        outCollectors[config.Out] = OutCollectorInstance{config.Collector, gauge}
+        return outCollectors[config.Out]
     } else if(config.Collector == "Counter") {
         counter :=  promauto.NewCounter(prometheus.CounterOpts{
                 Name: config.Out,
                 Help: config.Out,
         })
-        outCollectors[config.Out] = counter
-        return counter
+        outCollectors[config.Out] = OutCollectorInstance{config.Collector, counter}
+        return outCollectors[config.Out]
+    } else if(config.Collector == "Time") {
+        gauge :=  promauto.NewGauge(prometheus.GaugeOpts{
+                Name: config.Out,
+                Help: config.Out,
+        })
+        outCollectors[config.Out] = OutCollectorInstance{config.Collector, gauge}
+        return outCollectors[config.Out]
     } 
     counter :=  promauto.NewGaugeVec(prometheus.GaugeOpts{
             Name: config.Out,
             Help: config.Out,
     },
     []string{config.Out})
-    outCollectors[config.Out] = counter
-    return counter
+    outCollectors[config.Out] = OutCollectorInstance{config.Collector, counter}
+    return outCollectors[config.Out]
 }
