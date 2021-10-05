@@ -156,6 +156,7 @@ rainin:
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
+    decimalplace: 1
 rainratein:
   - out: rain_in
     collector: Gauge
@@ -163,6 +164,7 @@ rainratein:
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
+    decimalplace: 1
 hourlyrainin:
   - out: hourlyrain_in
     collector: Gauge
@@ -170,6 +172,7 @@ hourlyrainin:
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
+    decimalplace: 1
 dailyrainin:
   - out: dailyrain_in
     collector: Gauge
@@ -177,6 +180,7 @@ dailyrainin:
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
+    decimalplace: 1
 weeklyrainin:
   - out: weeklyrain_in
     collector: Gauge
@@ -184,6 +188,7 @@ weeklyrainin:
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
+    decimalplace: 1
 monthlyrainin:
   - out: monthlyrain_in
     collector: Gauge
@@ -191,6 +196,7 @@ monthlyrainin:
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
+    decimalplace: 1
 yearlyrainin:
   - out: yearlyrain_in
     collector: Gauge
@@ -198,6 +204,7 @@ yearlyrainin:
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
+    decimalplace: 1
 totalrainin:
   - out: totalrain_in
     collector: Gauge
@@ -205,6 +212,7 @@ totalrainin:
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
+    decimalplace: 1
 eventrainin:
   - out: eventrain_in
     collector: Gauge
@@ -212,6 +220,7 @@ eventrainin:
     collector: Gauge
     expression: "[in] * 25.4"
     dodecimalplace: true
+    decimalplace: 1
 solarradiation:
   - out: solarradiation
     collector: Gauge
