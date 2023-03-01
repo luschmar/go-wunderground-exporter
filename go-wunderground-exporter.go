@@ -13,7 +13,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"gopkg.in/Knetic/govaluate.v2"
+	"gopkg.in/Knetic/govaluate.v3"
 )
 
 var data = `
