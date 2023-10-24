@@ -1,6 +1,6 @@
 module luschmar/go-wunderground-exporter
 
-go 1.20
+go 2.21
 
 require (
 	github.com/prometheus/client_golang v1.17.0
